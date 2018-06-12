@@ -1,0 +1,124 @@
+ \documentclass[a4paper,10pt]{article}
+
+\usepackage{lmodern}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[brazilian]{babel}
+\usepackage[margin=0.5in]{geometry}
+\usepackage{booktabs}
+\usepackage{float}    % For floating images and tables
+\usepackage{threeparttable}
+\usepackage{tablefootnote}
+\usepackage{tabularx}
+\usepackage{color}    % Controle das cores
+\usepackage{listings} % Para incluir código fonte com formatação
+\usepackage{xfrac}
+\usepackage[colorlinks=true]{hyperref}
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{multirow}
+\usepackage{xfrac}  % Slanted fractions
+
+% ---
+% Listings
+% ---
+\renewcommand{\lstlistingname}{Algoritmo}% Listing -> Algoritmo
+\renewcommand{\lstlistlistingname}{Lista de \lstlistingname s}% List of Listings -> Lista de Algoritmos
+\definecolor{mygreen}{rgb}{0,0.6,0}
+\definecolor{mygray}{rgb}{0.5,0.5,0.5}
+\definecolor{mymauve}{rgb}{0.58,0,0.82}
+\lstset{ %
+  backgroundcolor=\color{white},     % choose the background color;
+  basicstyle=\footnotesize\ttfamily, % the size of the fonts that are used for the code
+  breakatwhitespace=false,           % sets if automatic breaks should only happen at whitespace
+  breaklines=true,                 % sets automatic line breaking
+  captionpos=t,                    % sets the caption-position to bottom
+  commentstyle=\color{mygreen},    % comment style
+  deletekeywords={...},            % if you want to delete keywords from the given language
+  escapeinside={\%*}{*)},          % if you want to add LaTeX within your code
+  extendedchars=true,              % lets you use non-ASCII characters; for 8-bits encodings only, does not work with UTF-8
+  frame=single,                    % adds a frame around the code
+  keepspaces=true,                 % keeps spaces in text, useful for keeping indentation of code (possibly needs columns=flexible)
+  keywordstyle=\color{blue},       % keyword style
+  language=Python,                 % the language of the code
+  morekeywords={*,...},            % if you want to add more keywords to the set
+  numbers=none,                    % where to put the line-numbers; possible values are (none, left, right)
+  numbersep=5pt,                   % how far the line-numbers are from the code
+  numberstyle=\tiny\color{mygray}, % the style that is used for the line-numbers
+  rulecolor=\color{black},         % if not set, the frame-color may be changed on line-breaks within not-black text (e.g. comments (green here))
+  showspaces=false,                % show spaces everywhere adding particular underscores; it overrides 'showstringspaces'
+  showstringspaces=false,          % underline spaces within strings only
+  showtabs=false,                  % show tabs within strings adding particular underscores
+  stepnumber=2,                    % the step between two line-numbers. If it's 1, each line will be numbered
+  stringstyle=\color{mymauve},     % string literal style
+  tabsize=2,                       % sets default tabsize to 2 spaces
+  title=\lstname,                  % show the filename of files included with \lstinputlisting; also try caption instead of title
+  numberbychapter=false            % number lists by chapter or sequentially from the beginning of the document
+}
+
+
+
+\author{Makhles Reuter Lange \\
+        Ciências da Computação - CCO \\
+        Departamento de Informática e Estatística - INE \\
+        Universidade Federal de Santa Catarina - UFSC}
+\title{Carteira de Trabalho em Blockchain}
+\date{Florianópolis, junho de 2018}
+
+\begin{document}
+\maketitle
+
+%------------------------------------------------------------------------------
+%------------------------------------------------------------------------------
+\section{Contextualização}
+\section{Requisitos Funcionais}
+
+\begin{enumerate}
+  % \item \textbf{Criar a carteira de trabalho} - Possibilitar que o usuário crie sua carteira de trabalho informando os dados obrigatórios: nome, filiação, data de nascimento, número do documento de identidade e órgão emissor, número do título de eleitor, PIS/PASEP, estado civil, naturalidade, sexo, CPF e CNH.
+  \item \textbf{Criar a carteira de trabalho} - Possibilitar que o usuário crie a sua carteira de trabalho informando os seguintes dados pessoais obrigatórios (dados do tipo \texttt{string}, a não ser onde especificado):
+    \begin{itemize}
+      \item Nome;
+      \item Filiação;
+      \item Data de nascimento. Tipo: \texttt{date};
+      \item Documento de identidade:
+      \begin{itemize}
+        \item Número;
+        \item Data de emissão. Tipo: \texttt{date};
+        \item Órgão emissor;
+      \end{itemize}
+      \item Título de eleitor:
+      \begin{itemize}
+        \item Número;
+        \item Zona;
+        \item Seção;
+      \end{itemize}
+      \item PIS/PASEP;
+      \item Estado civil. Opções: \texttt{[ SO | C | D | SE | V ]};
+      \item Naturalidade;
+      \item Sexo. Opções: \texttt{[ M | F ]};
+      \item Número do CPF;
+      \item Número da CNH;
+      \item Grupo sangüíneo. Opções: \texttt{[ OP | ON | AP | AN | BP | BN | ABP | ABN ]};
+      \item Possui alergias? Opções: \texttt{[ S | N ]};
+      \item É hemofílico? Opções: \texttt{[ S | N ]};
+      \item É diabético? Opções: \texttt{[ S | N ]};
+      \item É doador de órgãos? Opções: \texttt{[ S | N ]}.
+    \end{itemize}
+  \item \textbf{Alterar o nome} - O empregado poderá alterar o seu nome, contanto que forneça o motivo, \emph{e.g.}, matrimônio.
+  \item \textbf{Alterar o estado civil} - O empregado poderá alterar o seu estado civil.
+  \item \textbf{Solicitar a firma de um contrato de trabalho} - O empregado e o empregador poderão solicitar a firma de um contrato de trabalho entre si.
+  \item \textbf{Firmar um contrato de trabalho} - Possibilitar que um contrato de trabalho entre o empregador e empregado seja firmado.
+  \item \textbf{Rescindir um contrato de trabalho} - Possibilitar que o empregador e o empregado rescindam um contrato de trabalho.
+  \item \textbf{Adicionar licença} - Possibilitar que o empregador adicione licenças concedidas ao empregado. 
+  \item \textbf{Adicionar período de afastamento} - Possibilitar que o INSS faça anotações sobre afastamentos do empregado.
+  \item \textbf{Adicionar período de férias} - Possibilitar que o empregador adicione períodos de férias gozadas pelo empregado.
+  \item \textbf{Calcular tempo de trabalho} - Possibilitar o cálculo do tempo de trabalho total desde a criação da carteira de trabalho.
+\end{enumerate}
+
+\section{Requisitos Não-Funcionais}
+\section{Requisitos Externos}
+
+
+
+\end{document}
