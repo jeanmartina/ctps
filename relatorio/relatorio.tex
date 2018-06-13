@@ -6,58 +6,15 @@
 \usepackage[brazilian]{babel}
 \usepackage[margin=0.5in]{geometry}
 \usepackage{booktabs}
-\usepackage{float}    % For floating images and tables
-\usepackage{threeparttable}
 \usepackage{tablefootnote}
 \usepackage{tabularx}
 \usepackage{color}    % Controle das cores
-\usepackage{listings} % Para incluir código fonte com formatação
-\usepackage{xfrac}
 \usepackage[colorlinks=true]{hyperref}
 \usepackage{graphicx}
 \usepackage{amsmath}
 \usepackage{amsfonts}
-\usepackage{multirow}
-\usepackage{xfrac}  % Slanted fractions
-
-% ---
-% Listings
-% ---
-\renewcommand{\lstlistingname}{Algoritmo}% Listing -> Algoritmo
-\renewcommand{\lstlistlistingname}{Lista de \lstlistingname s}% List of Listings -> Lista de Algoritmos
-\definecolor{mygreen}{rgb}{0,0.6,0}
-\definecolor{mygray}{rgb}{0.5,0.5,0.5}
-\definecolor{mymauve}{rgb}{0.58,0,0.82}
-\lstset{ %
-  backgroundcolor=\color{white},     % choose the background color;
-  basicstyle=\footnotesize\ttfamily, % the size of the fonts that are used for the code
-  breakatwhitespace=false,           % sets if automatic breaks should only happen at whitespace
-  breaklines=true,                 % sets automatic line breaking
-  captionpos=t,                    % sets the caption-position to bottom
-  commentstyle=\color{mygreen},    % comment style
-  deletekeywords={...},            % if you want to delete keywords from the given language
-  escapeinside={\%*}{*)},          % if you want to add LaTeX within your code
-  extendedchars=true,              % lets you use non-ASCII characters; for 8-bits encodings only, does not work with UTF-8
-  frame=single,                    % adds a frame around the code
-  keepspaces=true,                 % keeps spaces in text, useful for keeping indentation of code (possibly needs columns=flexible)
-  keywordstyle=\color{blue},       % keyword style
-  language=Python,                 % the language of the code
-  morekeywords={*,...},            % if you want to add more keywords to the set
-  numbers=none,                    % where to put the line-numbers; possible values are (none, left, right)
-  numbersep=5pt,                   % how far the line-numbers are from the code
-  numberstyle=\tiny\color{mygray}, % the style that is used for the line-numbers
-  rulecolor=\color{black},         % if not set, the frame-color may be changed on line-breaks within not-black text (e.g. comments (green here))
-  showspaces=false,                % show spaces everywhere adding particular underscores; it overrides 'showstringspaces'
-  showstringspaces=false,          % underline spaces within strings only
-  showtabs=false,                  % show tabs within strings adding particular underscores
-  stepnumber=2,                    % the step between two line-numbers. If it's 1, each line will be numbered
-  stringstyle=\color{mymauve},     % string literal style
-  tabsize=2,                       % sets default tabsize to 2 spaces
-  title=\lstname,                  % show the filename of files included with \lstinputlisting; also try caption instead of title
-  numberbychapter=false            % number lists by chapter or sequentially from the beginning of the document
-}
-
-
+\usepackage{enumitem}
+\usepackage{multicol}
 
 \author{Makhles Reuter Lange \\
         Ciências da Computação - CCO \\
@@ -75,59 +32,77 @@
 
 Este trabalho consiste no desenvolvimento de uma nova solução para Carteiras de Trabalho utilizando a tecnologia \emph{blockchains}. Será criado um contrato inteligente com o auxílio da plataforma Ethereum.
 
+\section{Requisitos}\label{sec:req}
+\subsection{Requisitos Funcionais}\label{sec:req_funcionais}
 
-\section{Requisitos Funcionais}
+\begin{itemize}
+  \item \textbf{\texttt{[RF01]}} Possibilitar a criação da carteira de trabalho de uma pessoa que forneça seus dados pessoais (vide~\texttt{RE02} na Seção~\ref{sec:req_externos}). 
+  \item \textbf{\texttt{[RF02]}} Permitir que o empregado registre uma alteração no seu nome. Esta situação poderá ocorrer quando houver uma mudança no seu estado civil.
+  \item \textbf{\texttt{[RF03]}} Permitir que o empregado registre uma alteração no seu estado civil.
+  \item \textbf{\texttt{[RF04]}} Permitir que um empregador solicite a firma de um contrato de trabalho com o dono da carteira de trabalho.
+  \item \textbf{\texttt{[RF05]}} Permitir que o dono da carteira de trabalho aceite a solicitação de firma de contrato de trabalho.
+  \item \textbf{\texttt{[RF06]}} Possibilitar que o empregador e o empregado rescindam um contrato de trabalho firmado entre si.
+  \item \textbf{\texttt{[RF07]}} Possibilitar que o empregador adicione licenças concedidas ao empregado. 
+  \item \textbf{\texttt{[RF08]}} Permitir que o INSS adicione registros sobre afastamentos do empregado.
+  \item \textbf{\texttt{[RF09]}} Permitir que o empregador adicione períodos de férias gozadas pelo empregado.
+  \item \textbf{\texttt{[RF10]}} Permitir o cálculo do tempo de trabalho total desde a criação da carteira de trabalho.
+\end{itemize}
 
-\begin{enumerate}
-  % \item \textbf{Criar a carteira de trabalho} - Possibilitar que o usuário crie sua carteira de trabalho informando os dados obrigatórios: nome, filiação, data de nascimento, número do documento de identidade e órgão emissor, número do título de eleitor, PIS/PASEP, estado civil, naturalidade, sexo, CPF e CNH.
-  \item \textbf{Criar a carteira de trabalho} - Possibilitar que o usuário crie a sua carteira de trabalho informando os seguintes dados pessoais obrigatórios (dados do tipo \texttt{string}, a não ser onde especificado):
+\subsection{Requisitos Não-Funcionais}
+\begin{itemize}
+  \item \textbf{\texttt{[RNF01]}} A carteira de trabalho deverá ser feita utilizando contratos inteligentes.
+  \item \textbf{\texttt{[RNF02]}} O contrato inteligente deverá ser feito utilizando a linguagem Solidity.
+  \item \textbf{\texttt{[RNF03]}} O teste do contrato inteligente deverá ser feito utilizando a ferramenta \href{https://remix.ethereum.org/}{Remix}.
+\end{itemize}
+
+\subsection{Requisitos Externos}\label{sec:req_externos}
+\begin{itemize}
+  \item \textbf{\texttt{[RE01]}} O cálculo do tempo de trabalho, em relação aos requisitos funcionais \texttt{RF07}, \texttt{RF08} e \texttt{RF09}, deverá atender às normas legais definidas na Consolidação das Leis do Trabalho.
+  \item \textbf{\texttt{[RE02]}} A carteira de trabalho desenvolvida não deverá expor as informações pessoais do seu dono.
+
+  Atualmente, todos os contratos e dados contidos no blockchain podem ser vistos em bytecode por qualquer pessoa. Para impedir que os dados pessoais do dono da carteira de trabalho sejam visíveis, decidiu-se pela utilização do \emph{hash} destes dados, ao invés dos dados em si. Supõe-se, então, que haverá uma entidade reguladora responsável por emitir a carteira de trabalho para o cidadão, e que esta entidade, de posse dos seus dados, fornecerá o \emph{hash} dos dados na criação da carteira.
+
+  \item \textbf{\texttt{[RE03]}} Caberá a esta entidade, também, definir os dados que o cidadão deverá fornecer para a criação de sua carteira. Cita-se, como exemplo:
+
+  \begin{multicols}{3}
     \begin{itemize}
-      \item Nome;
+      \item Nome do cidadão;
       \item Filiação;
-      \item Data de nascimento. Tipo: \texttt{date};
-      \item Documento de identidade:
-      \begin{itemize}
-        \item Número;
-        \item Data de emissão. Tipo: \texttt{date};
-        \item Órgão emissor;
-      \end{itemize}
-      \item Título de eleitor:
-      \begin{itemize}
-        \item Número;
-        \item Zona;
-        \item Seção;
-      \end{itemize}
-      \item PIS/PASEP;
-      \item Estado civil. Opções: \texttt{[ SO | C | D | SE | V ]};
+      \item Data de nascimento.
       \item Naturalidade;
-      \item Sexo. Opções: \texttt{[ M | F ]};
+      \item Sexo;
+      \item Documento de identidade;
+      \item Título de eleitor;
+      \item PIS/PASEP;
+      \item Estado civil;
       \item Número do CPF;
       \item Número da CNH;
-      \item Grupo sangüíneo. Opções: \texttt{[ OP | ON | AP | AN | BP | BN | ABP | ABN ]};
-      \item Possui alergias? Opções: \texttt{[ S | N ]};
-      \item É hemofílico? Opções: \texttt{[ S | N ]};
-      \item É diabético? Opções: \texttt{[ S | N ]};
-      \item É doador de órgãos? Opções: \texttt{[ S | N ]}.
+      \item Grupo sangüíneo;
+      \item Possui alergias?
+      \item É hemofílico?
+      \item É diabético?
+      \item É doador de órgãos?
+      % \item Documento de identidade:
+      % \begin{itemize}
+        % \item Número;
+        % \item Data de emissão.
+        % \item Órgão emissor;
+      % \end{itemize}
+      % \item Título de eleitor:
+      % \begin{itemize}
+        % \item Número;
+        % \item Zona;
+        % \item Seção;
+      % \end{itemize}
     \end{itemize}
-  \item \textbf{Alterar o nome} - O empregado poderá alterar o seu nome, contanto que forneça o motivo, \emph{e.g.}, matrimônio.
-  \item \textbf{Alterar o estado civil} - O empregado poderá alterar o seu estado civil.
-  \item \textbf{Solicitar a firma de um contrato de trabalho} - O empregado e o empregador poderão solicitar a firma de um contrato de trabalho entre si.
-  \item \textbf{Firmar um contrato de trabalho} - Possibilitar que um contrato de trabalho entre o empregador e empregado seja firmado.
-  \item \textbf{Rescindir um contrato de trabalho} - Possibilitar que o empregador e o empregado rescindam um contrato de trabalho.
-  \item \textbf{Adicionar licença} - Possibilitar que o empregador adicione licenças concedidas ao empregado. 
-  \item \textbf{Adicionar período de afastamento} - Possibilitar que o INSS faça anotações sobre afastamentos do empregado.
-  \item \textbf{Adicionar período de férias} - Possibilitar que o empregador adicione períodos de férias gozadas pelo empregado.
-  \item \textbf{Calcular tempo de trabalho} - Possibilitar o cálculo do tempo de trabalho total desde a criação da carteira de trabalho.
-\end{enumerate}
+  \end{multicols}
+\end{itemize}
 
-\section{Requisitos Não-Funcionais}
-\begin{enumerate}
-  \item A carteira de trabalho deverá ser feita utilizando contratos inteligentes.
-  \item O contrato inteligente deverá ser feito utilizando a linguagem Solidity.
-  \item O teste do contrato inteligente deverá ser feito utilizando a ferramenta \href{https://remix.ethereum.org/}{Remix}.
-\end{enumerate}
-\section{Requisitos Externos}
+\section{Critérios de Sucesso}
 
+% Conforme estabelecido na Seção~\ref{sec:req}, este trabalho possui dez requisitos funcionais. 
+Propõe-se que a avaliação seja feita com base no sucesso da execução de cada um requisitos funcionais definidos na Seção~\ref{sec:req_funcionais}, e no atendimento aos requisitos externos \texttt{RE01} e \texttt{RE02}, totalizando 12 requisitos. Neste caso:
 
+\[ \text{Nota do trabalho } = \frac{\text{ número de requisitos atendidos }}{12} \]
 
 \end{document}
