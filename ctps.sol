@@ -20,7 +20,7 @@ contract CTPS {
     }
 
     // Evento que indica que um empregador deseja firmar um contrato com o dono da carteira
-    event SolicitacaoContrato(address _contrato);
+    event SolicitacaoContrato(address _contrato, uint8 indice);
 
     // RF01 - 0x0c6c57e6e93725646e60bb23308a054e8870aa9c
     constructor(address _empregado, uint8 _dummy, address _dadosPessoais) public {
@@ -36,8 +36,8 @@ contract CTPS {
 
     // RF04
     function solicitarFirmaContrato(address _contrato) public {
-        solicitacoes.push(_contrato);
-        emit SolicitacaoContrato(_contrato);
+        uint8 indice = solicitacoes.push(_contrato) - 1;
+        emit SolicitacaoContrato(_contrato, indice);
     }
 
     // ---------

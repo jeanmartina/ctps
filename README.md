@@ -41,3 +41,15 @@ Para se calcular o hash desses dados, deve-se utilizar uma função de dispersã
 0c6c57e6e93725646e60bb23308a054e8870aa9c  dados_pessoais
 ```
 Após adicionar o prefixo `0x`, este número pode ser usado no construtor da CTPS e como parâmetro da função `alterarDadosPessoais`.
+
+
+## `RF04` - Solicitação e Aceite de Firma de Contrato
+
+Um empregador pode fazer uma solicitação de firma de contrato com uma pessoa ao chamar o método `solicitarFirmaContrato`. Deve-se passar o endereço do contrato de trabalho:
+```
+    function solicitarFirmaContrato(address _contrato) public {
+        uint8 indice = solicitacoes.push(_contrato) - 1;
+        emit SolicitacaoContrato(_contrato, indice);
+    }
+```
+A solicitação é armazenada no arranjo dinâmico `solicitacoes`. Um evento com o endereço do contrato e seu índice no arranjo é emitido para que o dono da carteira possa aceitar ou rejeitar a solicitação.
