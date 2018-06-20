@@ -3,12 +3,12 @@
 Implementação de um contrato inteligente escrito na linguagem Solidity que representa uma Carteira de Trabalho. Testes de execução foram feitos na IDE Remix.
 
 ## Configuração da IDE Remix
-Selecionar o compilador `0.4.24+commit.e67f0147` na aba __Settings__.
+Selecionar o compilador `0.4.24+commit.e67f0147` na aba _Settings_.
 
 
 ## `RF01` - Criação da Carteira de Trabalho
 
-A criação da Carteira de Trabalho pode feita em alguma das instalações da Previdência Social. Supõe-se a existência de uma aplicação que possua um formulário para inserção dos dados da pessoa e que seja capaz de se comunicar com a plataforma Ethereum. Esta aplicação pode chamar o construtor do contrato CTPS passando-se o endereço da conta da pessoa no Ethereum e o __hash__ dos seus dados pessoais (vide Seção __Hash dos Dados Pessoais__):
+A criação da Carteira de Trabalho pode feita em alguma das instalações da Previdência Social. Supõe-se a existência de uma aplicação que possua um formulário para inserção dos dados da pessoa e que seja capaz de se comunicar com a plataforma Ethereum. Esta aplicação pode chamar o construtor do contrato CTPS passando-se o endereço da conta da pessoa no Ethereum e o _hash_ dos seus dados pessoais (vide Seção __Hash dos Dados Pessoais__):
 ```
     constructor(address _empregado, uint8 _dummy, address _dadosPessoais) public {
         previdenciaSocial = msg.sender;
@@ -17,7 +17,7 @@ A criação da Carteira de Trabalho pode feita em alguma das instalações da Pr
     }
 ```
 
-Obs.: o parâmetro `dummy` é necessário devido a um __bug__ que encontrei que não permite a instanciação de um contrato passando dois parâmetros do tipo `address` em sequência. Não se sabe se o __bug__ está presente somente no Remix ou se é alguma restrição da linguagem.
+Obs.: o parâmetro `dummy` é necessário devido a um _bug_ que encontrei que não permite a instanciação de um contrato passando dois parâmetros do tipo `address` em sequência. Não se sabe se o _bug_ está presente somente no Remix ou se é alguma restrição da linguagem.
 
 
 ## `RF02` e `RF03` - Alteração dos dados pessoais
