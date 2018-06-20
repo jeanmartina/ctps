@@ -35,7 +35,6 @@ Assim como é feito em uma CTPS física, a alteração dos dados pessoais dever�
 O arquivo [dados_pessoais](./dados_pessoais) contém alguns dados fictícios utilizados como exemplo na geração da carteira de trabalho. A geração dos dados foi feita através do site [4devs](https://www.4devs.com.br/).
 
 Para se calcular o hash desses dados, deve-se utilizar uma função de dispersão criptográfica, tal como o [SHA-1](https://en.wikipedia.org/wiki/SHA-1 "Wikipedia: SHA-1"). Pode-se utilizar o programa `sha1sum`, disponível na maioria dos sistemas Unix. Fornecendo-se o arquivo com os dados pessoais, este programa produz um resumo de mensagem de 160 bits (20 bytes), na forma de um número hexadecimal de 40 dígitos:
-
 ```
 % sha1sum dados_pessoais
 0c6c57e6e93725646e60bb23308a054e8870aa9c  dados_pessoais
@@ -43,13 +42,32 @@ Para se calcular o hash desses dados, deve-se utilizar uma função de dispersã
 Após adicionar o prefixo `0x`, este número pode ser usado no construtor da CTPS e como parâmetro da função `alterarDadosPessoais`.
 
 
-## `RF04` - Solicitação e Aceite de Firma de Contrato
+## `RF04` - Solicitação de Firma de Contrato
 
-Um empregador pode fazer uma solicitação de firma de contrato com uma pessoa ao chamar o método `solicitarFirmaContrato`. Deve-se passar o endereço do contrato de trabalho:
+Um empregador pode fazer uma solicitação de firma de contrato com uma pessoa ao chamar o método `solicitarFirmaContrato`. O endereço do contrato de trabalho deve ser passado como parâmetro:
 ```
     function solicitarFirmaContrato(address _contrato) public {
         uint8 indice = solicitacoes.push(_contrato) - 1;
         emit SolicitacaoContrato(_contrato, indice);
     }
 ```
-A solicitação é armazenada no arranjo dinâmico `solicitacoes`. Um evento com o endereço do contrato e seu índice no arranjo é emitido para que o dono da carteira possa aceitar ou rejeitar a solicitação.
+A solicitação é armazenada no arranjo dinâmico `solicitacoes`. Um evento com o endereço do contrato e seu índice no arranjo é emitido para que o dono da carteira possa aceitar ou rejeitar a solicitação. Utilizou-se o tipo `uint8` para o índice da solicitação por ser o menor tipo inteiro disponível e por se supor que uma pessoa não terá mais de 256 solicitações de contrato em um dado momento.
+
+
+## `RF05` - Aceite & Rejeição de Firma de Contrato
+
+Ao receber o evento de solicitação de firma de contrato em sua interface, o dono da CTPS poderá aceitar firmar o contrato através do método `aceitarSolicitacao`. O índice da solicitação deverá ser passado como parâmetro. O contrato é adicionado no arranjo de contratos do trabalhador, `contratos`, e removido do arranjo de solicitações:
+```
+    function aceitarSolicitacao(uint8 _indice) public onlyBy(empregado) {
+        contratos.push(solicitacoes[indice]);
+        delete solicitacoes[indice];
+    }
+```
+Semelhantemente, o dono da carteira de trabalho pode decidir-se por não aceitar a proposta de trabalho, e a solicitação será removida do arranjo de solicitações:
+```
+    function rejeitarSolicitacao(uint8 _indice) public onlyBy(empregado) {
+        delete solicitacoes[indice];
+    }
+```
+
+

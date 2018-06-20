@@ -40,6 +40,17 @@ contract CTPS {
         emit SolicitacaoContrato(_contrato, indice);
     }
 
+    // RF05
+    function aceitarSolicitacao(uint8 _indice) public onlyBy(empregado) {
+        contratos.push(solicitacoes[indice]);
+        delete solicitacoes[indice];
+    }
+
+    // RF05
+    function rejeitarSolicitacao(uint8 _indice) public onlyBy(empregado) {
+        delete solicitacoes[indice];
+    }
+
     // ---------
     // TESTES
 
