@@ -110,19 +110,20 @@ onde `TipoLicenca` é o _enum_ `enum TipoLicenca { MATERNIDADE, PATERNIDADE, CAS
 
 A adição de afastamentos na CTPS só poderá ser feita pelo órgão regulador, que neste caso é o INSS. Assim como no caso anterior, a inserção é feita diretamente no contrato de trabalho em que houve o afastamento:
 ```
-    function adicionarAfastamento(string _motivo, uint _inicio, uint _termino) public {
+    function adicionarAfastamento(string _motivo, uint _inicio, uint _termino, bool _integra) public {
         require(msg.sender == inss, "Acesso negado.");
         require(_termino > _inicio, "A data de término deve ser posterior à data de início.");
-        Afastamento memory periodo = Afastamento(_motivo, _inicio, _termino);
+        Afastamento memory periodo = Afastamento(_motivo, _inicio, _termino, _integra);
         afastamentos.push(periodo);
     }
 ```
-Além das datas de início e término do afastamento, considerou-se colocar também o motivo do afastamento que, assim como as informações do contrato (armazenadas em `info`), pode ser um texto cifrado cuja decifragem somente poderá ser feita nas interfaces do empregado, do empregador e do INSS:
+Além das datas de início e término do afastamento, considerou-se colocar também o motivo do afastamento que, assim como as informações do contrato (armazenadas em `info`), pode ser um texto cifrado cuja decifragem somente poderá ser feita nas interfaces do empregado, do empregador e do INSS, e também uma flag que indica de o período de afastamento deve contar para a integralização da aposentadoria:
 ```
     struct Afastamento {
         string motivo;
         uint inicio;
         uint termino;
+        bool integra;
     }
 ```
 
@@ -142,5 +143,58 @@ Da mesma forma que no requisito `RF07`, cabe ao empregador adicionar os período
     struct Ferias {
         uint inicio;
         uint termino;
+    }
+```
+
+## `RF10` - Cálculo do Tempo Total
+
+O empregado pode calcular o tempo total de trabalho em todos os seus contratos de trabalho chamando o método `tempoAposentadoria`:
+
+```
+    function tempoAposentadoria() public view returns (uint) {
+        require(msg.sender == empregado || msg.sender == inss, "Acesso negado.");
+        
+        uint total = 0;
+
+        for (uint i = 0; i < contratos.length; i++) {
+            Contrato c = Contrato(contratos[i]);
+            total = total + c.tempoAposentadoria();
+        }
+
+        return total;
+    }
+```
+
+Em `Contrato.tempoAposentadoria()`, calcula-se o tempo total máximo daquele contrato pela diferença entre a data de rescisão do contrato e a data de admissão. Caso o contrato ainda esteja vigente, então utiliza-se o tempo marcado no bloco minerado. A seguir, deduz-se desse valor o tempo em que o empregado esteve de licença não-remunerada (ou seja, houve uma suspensão no contrato de trabalho, ao invés de uma interrupção deste). Finalmente, deduz-se também os períodos de afastamento que não integram para a aposentadoria:
+```
+    function tempoAposentadoria() public view returns (uint) {
+        require(msg.sender == empregado || msg.sender == empregador || msg.sender == inss, "Acesso negado.");
+        require(dataAdmissao != 0, "Este contrato ainda não foi firmado.");
+
+        uint i;
+        uint total = 0;
+
+        // Tempo total do contrato
+        if (dataRescisao != 0) {
+            total = dataRescisao - dataAdmissao;
+        } else {
+            total = block.timestamp - dataAdmissao;
+        }
+
+        // Remoção dos períodos gozados por licenças que não são consideradas para
+        // a integração da aposentadoria pelo INSS
+        for (i = 0; i < licencas.length; i++) {
+            if (licencas[i].tipo == TipoLicenca.NAO_REMUNERADA) {
+                total = total - (licencas[i].termino - licencas[i].inicio);
+            }
+        }
+
+        // Remoção dos períodos de afastamento que não integram na aposentadoria
+        for (i = 0; i < afastamentos.length; i++) {
+            if (!afastamentos[i].integra) {
+                total = total - (afastamentos[i].termino - afastamentos[i].inicio);
+            }
+        }
+        return total;
     }
 ```

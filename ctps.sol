@@ -5,7 +5,7 @@ pragma solidity ^0.4.24;
 
 // Contrato de Trabalho
 contract Contrato {
-    enum TipoLicenca { MATERNIDADE, PATERNIDADE, CASAMENTO, OBITO, MILITAR }
+    enum TipoLicenca { MATERNIDADE, PATERNIDADE, CASAMENTO, OBITO, MILITAR, NAO_REMUNERADA }
     struct Licenca {
         TipoLicenca tipo;
         uint inicio;
@@ -19,6 +19,7 @@ contract Contrato {
         string motivo;
         uint inicio;
         uint termino;
+        bool integra;
     }
     
     address public empregador;
@@ -70,17 +71,17 @@ contract Contrato {
     // RF07
     function adicionarLicenca(uint _tipo, uint _inicio, uint _termino) public {
         require(msg.sender == empregador, "Acesso negado.");
-        require(_tipo <= uint(TipoLicenca.MILITAR), "Tipo de licença inexistente.");
+        require(_tipo <= uint(TipoLicenca.NAO_REMUNERADA), "Tipo de licença inexistente.");
         require(_termino > _inicio, "A data de término deve ser posterior à data de início.");
         Licenca memory licenca = Licenca(TipoLicenca(_tipo), _inicio, _termino);
         licencas.push(licenca);
     }
 
     // RF08
-    function adicionarAfastamento(string _motivo, uint _inicio, uint _termino) public {
+    function adicionarAfastamento(string _motivo, uint _inicio, uint _termino, bool _integra) public {
         require(msg.sender == inss, "Acesso negado.");
         require(_termino > _inicio, "A data de término deve ser posterior à data de início.");
-        Afastamento memory periodo = Afastamento(_motivo, _inicio, _termino);
+        Afastamento memory periodo = Afastamento(_motivo, _inicio, _termino, _integra);
         afastamentos.push(periodo);
     }
 
@@ -90,6 +91,38 @@ contract Contrato {
         require(_termino > _inicio, "A data de término deve ser posterior à data de início.");
         Ferias memory periodoFerias = Ferias(_inicio, _termino);
         ferias.push(periodoFerias);
+    }
+
+    // RF10
+    function tempoAposentadoria() public view returns (uint) {
+        require(msg.sender == empregado || msg.sender == empregador || msg.sender == inss, "Acesso negado.");
+        require(dataAdmissao != 0, "Este contrato ainda não foi firmado.");
+
+        uint i;
+        uint total = 0;
+
+        // Tempo total do contrato
+        if (dataRescisao != 0) {
+            total = dataRescisao - dataAdmissao;
+        } else {
+            total = block.timestamp - dataAdmissao;
+        }
+
+        // Remoção dos períodos gozados por licenças que não são consideradas para
+        // a integração da aposentadoria pelo INSS
+        for (i = 0; i < licencas.length; i++) {
+            if (licencas[i].tipo == TipoLicenca.NAO_REMUNERADA) {
+                total = total - (licencas[i].termino - licencas[i].inicio);
+            }
+        }
+
+        // Remoção dos períodos de afastamento que não integram na aposentadoria
+        for (i = 0; i < afastamentos.length; i++) {
+            if (!afastamentos[i].integra) {
+                total = total - (afastamentos[i].termino - afastamentos[i].inicio);
+            }
+        }
+        return total;
     }
 }
 
@@ -180,6 +213,19 @@ contract CTPS {
         require (_indice < contratos.length, "Índice inválido.");
         Contrato c = Contrato(contratos[_indice]);
         return c.obterDataRescisao();
+    }
+
+    function tempoAposentadoria() public view returns (uint) {
+        require(msg.sender == empregado || msg.sender == inss, "Acesso negado.");
+        
+        uint total = 0;
+
+        for (uint i = 0; i < contratos.length; i++) {
+            Contrato c = Contrato(contratos[i]);
+            total = total + c.tempoAposentadoria();
+        }
+
+        return total;
     }
 
     // ---------
