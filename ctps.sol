@@ -3,6 +3,39 @@ pragma solidity ^0.4.24;
 /// @title CTPS
 /// @author Makhles R. Lange
 
+// Contrato de Trabalho
+contract Contrato {
+    address public empregador;
+    address public empregado;
+    string private info;
+    uint private dataAdmissao;
+    uint private dataRecisao;
+
+    constructor(address _empregado, string _info) public {
+        empregador = msg.sender;
+        empregado = _empregado;
+        info = _info;
+    }
+
+    // ---------
+    // TESTES
+
+    function obterInfo() public view returns (string) {
+        require(msg.sender == empregado || msg.sender == empregador);
+        return info;
+    }
+    
+    function obterDataAdmissao() public view returns (uint) {
+        require(msg.sender == empregado || msg.sender == empregador);
+        return dataAdmissao;
+    }
+
+    function obterDataRecisao() public view returns (uint) {
+        require(msg.sender == empregado || msg.sender == empregador);
+        return dataRecisao;
+    }
+}
+
 // Carteira de Trabalho e Previdência Social
 contract CTPS {
 
@@ -10,17 +43,16 @@ contract CTPS {
     address private previdenciaSocial;
     address private dadosPessoais;
 
-    address[] private solicitacoes;
-    address[] private contratos;
+    Contrato[] private solicitacoes;
+    Contrato[] private contratos;
 
-    modifier onlyBy(address _quem) {
-        require(_quem == msg.sender,
-        "Acesso negado.");
+    modifier acesso(address _quem) {
+        require(_quem == msg.sender, "Acesso negado.");
         _;
     }
 
     // Evento que indica que um empregador deseja firmar um contrato com o dono da carteira
-    event SolicitacaoContrato(address _contrato, uint _indice);
+    event SolicitacaoContrato(Contrato _contrato, uint _indice);
 
     // RF01 - 0x0c6c57e6e93725646e60bb23308a054e8870aa9c
     constructor(address _empregado, uint8 _dummy, address _dadosPessoais) public {
@@ -30,51 +62,66 @@ contract CTPS {
     }
 
     // RF02 e RF03 - a alteração de dados poderá ser feita somente pela Previdência Social
-    function alterarDadosPessoais(address _dadosPessoais) public onlyBy(previdenciaSocial) {
+    function alterarDadosPessoais(address _dadosPessoais) public acesso(previdenciaSocial) {
         dadosPessoais = _dadosPessoais;
     }
 
     // RF04
-    function solicitarFirmaContrato(address _contrato) public {
+    function solicitarFirmaContrato(Contrato _contrato) public {
         uint indice = solicitacoes.push(_contrato) - 1;
         emit SolicitacaoContrato(_contrato, indice);
     }
 
     // RF05
-    function aceitarSolicitacao(uint _indice) public onlyBy(empregado) {
-        if (_indice >= solicitacoes.length) return;
+    function aceitarSolicitacao(uint _indice) public acesso(empregado) {
+        require (_indice < contratos.length);
         contratos.push(solicitacoes[_indice]);
-        remover(solicitacoes, _indice);
+        removerContrato(solicitacoes, _indice);
     }
 
     // RF05
-    function rejeitarSolicitacao(uint8 _indice) public onlyBy(empregado) {
-        remover(solicitacoes, _indice);
+    function rejeitarSolicitacao(uint _indice) public acesso(empregado) {
+        removerContrato(solicitacoes, _indice);
     }
 
-    function remover(address[] storage _vetor, uint _indice) internal {
+    function removerContrato(Contrato[] storage _vetor, uint _indice) internal {
         for (uint i = _indice; i < _vetor.length - 1; i++) {
             _vetor[i] = _vetor[i+1];
         }
         _vetor.length--;
     }
 
+    function obterInfo(uint _indice) public view acesso(empregado) returns (string) {
+        require (_indice < contratos.length);
+        return contratos[_indice].obterInfo();
+    }
+    
+    function obterDataAdmissao(uint _indice) public view acesso(empregado) returns (uint) {
+        require (_indice < contratos.length);
+        return contratos[_indice].obterDataAdmissao();
+    }
+
+    function obterDataRecisao(uint _indice) public view acesso(empregado) returns (uint) {
+        require (_indice < contratos.length);
+        return contratos[_indice].obterDataRecisao();
+    }
+
     // ---------
     // TESTES
 
-    function obterDadosPessoais() public view onlyBy(previdenciaSocial) returns (address) {
+    function obterDadosPessoais() public view acesso(previdenciaSocial) returns (address) {
         return dadosPessoais;
     }
 
-    function obterSolicitacoes() public view onlyBy(empregado) returns (uint) {
+    function obterSolicitacoes() public view acesso(empregado) returns (uint) {
         return solicitacoes.length;
     }
 
-    function obterSolicitacao(uint _indice) public view onlyBy(empregado) returns (address) {
+    function obterSolicitacao(uint _indice) public view acesso(empregado) returns (address) {
         return solicitacoes[_indice];
     }
     
-    function obterContratos() public view onlyBy(empregado) returns (uint) {
+    function obterContratos() public view acesso(empregado) returns (uint) {
         return contratos.length;
     }
 }
