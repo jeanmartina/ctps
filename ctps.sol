@@ -5,20 +5,27 @@ pragma solidity ^0.4.24;
 
 // Contrato de Trabalho
 contract Contrato {
+    enum TipoLicenca { MATERNIDADE, PATERNIDADE, CASAMENTO, OBITO, MILITAR }
+    struct Licenca {
+        TipoLicenca tipo;
+        uint inicio;
+        uint termino;
+    }
     address public empregador;
     address public empregado;
     string private info;
     uint private dataAdmissao = 0;
     uint private dataRescisao = 0;
+    Licenca[] private licencas;
 
     modifier acesso(address _quem) {
         require(_quem == msg.sender, "Acesso negado.");
         _;
     }
 
-    constructor(address _empregado, string _info) public {
-        empregador = msg.sender;
+    constructor(address _empregado, string _info, address _empregador) public {
         empregado = _empregado;
+        empregador = _empregador;
         info = _info;
     }
 
@@ -33,8 +40,8 @@ contract Contrato {
     }
 
     function firmar() public acesso(empregado) {
-        require(dataAdmissao == 0, "Este contrato já foi firmado.")
-        dataAdmissao = now;
+        require(dataAdmissao == 0, "Este contrato já foi firmado.");
+        dataAdmissao = block.timestamp;
     }
 
     function obterDataRescisao() public view returns (uint) {
@@ -44,8 +51,16 @@ contract Contrato {
 
     function rescindir() public {
         require(msg.sender == empregado || msg.sender == empregador, "Acesso negado.");
-        require(dataAdmissao != 0, "Este contrato ainda não foi firmado.")
-        dataRescisao = now;
+        require(dataAdmissao != 0, "Este contrato ainda não foi firmado.");
+        dataRescisao = block.timestamp;
+    }
+
+    // RF07
+    function adicionarLicenca(uint _tipo, uint _inicio, uint _termino) public {
+        require(msg.sender == empregador, "Acesso negado.");
+        require(_tipo <= uint(TipoLicenca.MILITAR), "Tipo de licença inexistente.");
+        Licenca memory licenca = Licenca(TipoLicenca(_tipo), _inicio, _termino);
+        licencas.push(licenca);
     }
 }
 
@@ -56,16 +71,20 @@ contract CTPS {
     address private previdenciaSocial;
     address private dadosPessoais;
 
-    Contrato[] private solicitacoes;
-    Contrato[] private contratos;
+    address[] private solicitacoes;
+    address[] private contratos;
 
     modifier acesso(address _quem) {
         require(_quem == msg.sender, "Acesso negado.");
         _;
     }
 
-    // Evento que indica que um empregador deseja firmar um contrato com o dono da carteira
-    event SolicitacaoContrato(Contrato _contrato, uint _indice);
+    // Evento que indica que um empregador deseja firmar um contrato com o dono da carteira.
+    event SolicitacaoContrato(uint _indice);
+
+    // Evento que indica que um novo contrato foi firmado pelo empregado e que deve
+    // ser ouvido pelo empregador para que este possa adicionar licenças e períodos de férias.
+    event ContratoFirmado(address _contrato);
 
     // RF01 - 0x0c6c57e6e93725646e60bb23308a054e8870aa9c
     constructor(address _empregado, uint8 _dummy, address _dadosPessoais) public {
@@ -80,31 +99,36 @@ contract CTPS {
     }
 
     // RF04
-    function solicitarFirmaContrato(Contrato _contrato) public {
-        uint indice = solicitacoes.push(_contrato) - 1;
-        emit SolicitacaoContrato(_contrato, indice);
+    function solicitarContrato(string _info) public {
+        Contrato c = new Contrato(empregado, _info, msg.sender);
+        uint indice = solicitacoes.push(c) - 1;
+        emit SolicitacaoContrato(indice);
     }
 
     // RF05
     function firmarContrato(uint _indice) public acesso(empregado) {
         require (_indice < solicitacoes.length, "Índice inválido.");
-        contratos.push(solicitacoes[_indice]);
-        contratos[contratos.length - 1].firmar();
-        removerContrato(solicitacoes, _indice);
+        Contrato c = Contrato(solicitacoes[_indice]);
+        c.firmar();
+        contratos.push(c);
+        removerElemento(solicitacoes, _indice);
+        emit ContratoFirmado(contratos[contratos.length-1]);
     }
+    
 
     // RF05
     function rejeitarSolicitacao(uint _indice) public acesso(empregado) {
-        removerContrato(solicitacoes, _indice);
+        removerElemento(solicitacoes, _indice);
     }
 
     // RF06
     function rescindirContrato(uint _indice) public acesso(empregado) {
         require (_indice < contratos.length, "Índice inválido.");
-        contratos[contratos.length - 1].rescindir();
+        Contrato c = Contrato(contratos[_indice]);
+        c.rescindir();
     }
 
-    function removerContrato(Contrato[] storage _vetor, uint _indice) internal {
+    function removerElemento(address[] storage _vetor, uint _indice) internal {
         for (uint i = _indice; i < _vetor.length - 1; i++) {
             _vetor[i] = _vetor[i+1];
         }
@@ -113,17 +137,20 @@ contract CTPS {
 
     function obterInfo(uint _indice) public view acesso(empregado) returns (string) {
         require (_indice < contratos.length, "Índice inválido.");
-        return contratos[_indice].obterInfo();
+        Contrato c = Contrato(contratos[_indice]);
+        return c.obterInfo();
     }
     
     function obterDataAdmissao(uint _indice) public view acesso(empregado) returns (uint) {
         require (_indice < contratos.length, "Índice inválido.");
-        return contratos[_indice].obterDataAdmissao();
+        Contrato c = Contrato(contratos[_indice]);
+        return c.obterDataAdmissao();
     }
 
     function obterDataRescisao(uint _indice) public view acesso(empregado) returns (uint) {
         require (_indice < contratos.length, "Índice inválido.");
-        return contratos[_indice].obterDataRescisao();
+        Contrato c = Contrato(contratos[_indice]);
+        return c.obterDataRescisao();
     }
 
     // ---------

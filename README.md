@@ -82,3 +82,24 @@ Esta funcionalidade permite que tanto o empregado quanto o empregador rescidam o
     }
 ```
 O empregador pode rescindir o contrato chamando o método `Contrato.rescindir` a partir de sua interface.
+
+## `RF07` - Adição de Licenças
+
+A adição de licenças é feita pelo empregador diretamente no contrato de trabalho. Conforme visto na seção __`RF05` - Aceite & Rejeição de Firma de Contrato__, quando um contrato é firmado pelo empregado, emite-se o evento `ContratoFirmado` com o endereço do contrato de trabalho. O empregador, que certamente estará observando esse evento, poderá armazenar esse endereço em sua interface. Posteriormente, esse endereço poderá ser usado para a adição de licenças e períodos de férias que o empregado gozou através do método `adicionarLicenca`:
+```
+    function adicionarLicenca(uint _tipo, uint _inicio, uint _termino) public {
+        require(msg.sender == empregador, "Acesso negado.");
+        require(_tipo <= uint(TipoLicenca.MILITAR), "Tipo de licença inexistente.");
+        Licenca memory licenca = Licenca(TipoLicenca(_tipo), _inicio, _termino);
+        licencas.push(licenca);
+    }
+```
+A licença é armazenada em uma `struct Licenca`, definida por:
+```
+    struct Licenca {
+        TipoLicenca tipo;
+        uint inicio;
+        uint termino;
+    }
+```
+onde `TipoLicenca` é o _enum_ `enum TipoLicenca { MATERNIDADE, PATERNIDADE, CASAMENTO, OBITO, MILITAR }`.
