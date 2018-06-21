@@ -56,9 +56,9 @@ A solicitação é armazenada no arranjo dinâmico `solicitacoes`. Um evento com
 
 ## `RF05` - Aceite & Rejeição de Firma de Contrato
 
-Ao receber o evento de solicitação de firma de contrato em sua interface, o dono da CTPS poderá aceitar firmar o contrato através do método `aceitarSolicitacao`. O índice da solicitação deverá ser passado como parâmetro. O contrato é adicionado no arranjo de contratos do trabalhador, `contratos`, e removido do arranjo de solicitações:
+Ao receber o evento de solicitação de firma de contrato em sua interface, o dono da CTPS poderá aceitar firmar o contrato através do método `firmarContrato`. O índice da solicitação deverá ser passado como parâmetro. O contrato é adicionado no arranjo de contratos do trabalhador, `contratos`, e removido do arranjo de solicitações:
 ```
-    function aceitarSolicitacao(uint8 _indice) public onlyBy(empregado) {
+    function firmarContrato(uint8 _indice) public onlyBy(empregado) {
         contratos.push(solicitacoes[indice]);
         delete solicitacoes[indice];
     }

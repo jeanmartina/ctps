@@ -11,27 +11,33 @@ contract Contrato {
     uint private dataAdmissao;
     uint private dataRecisao;
 
+    modifier acesso(address _quem) {
+        require(_quem == msg.sender, "Acesso negado.");
+        _;
+    }
+
     constructor(address _empregado, string _info) public {
         empregador = msg.sender;
         empregado = _empregado;
         info = _info;
     }
 
-    // ---------
-    // TESTES
-
     function obterInfo() public view returns (string) {
-        require(msg.sender == empregado || msg.sender == empregador);
+        require(msg.sender == empregado || msg.sender == empregador, "Acesso negado.");
         return info;
     }
     
     function obterDataAdmissao() public view returns (uint) {
-        require(msg.sender == empregado || msg.sender == empregador);
+        require(msg.sender == empregado || msg.sender == empregador, "Acesso negado.");
         return dataAdmissao;
     }
 
+    function firmar() public acesso(empregado) {
+        dataAdmissao = now;
+    }
+
     function obterDataRecisao() public view returns (uint) {
-        require(msg.sender == empregado || msg.sender == empregador);
+        require(msg.sender == empregado || msg.sender == empregador, "Acesso negado.");
         return dataRecisao;
     }
 }
@@ -73,9 +79,10 @@ contract CTPS {
     }
 
     // RF05
-    function aceitarSolicitacao(uint _indice) public acesso(empregado) {
-        require (_indice < contratos.length);
+    function firmarContrato(uint _indice) public acesso(empregado) {
+        require (_indice < contratos.length, "Índice inválido.");
         contratos.push(solicitacoes[_indice]);
+        contratos[contratos.length - 1].firmar();
         removerContrato(solicitacoes, _indice);
     }
 
@@ -92,17 +99,17 @@ contract CTPS {
     }
 
     function obterInfo(uint _indice) public view acesso(empregado) returns (string) {
-        require (_indice < contratos.length);
+        require (_indice < contratos.length, "Índice inválido.");
         return contratos[_indice].obterInfo();
     }
     
     function obterDataAdmissao(uint _indice) public view acesso(empregado) returns (uint) {
-        require (_indice < contratos.length);
+        require (_indice < contratos.length, "Índice inválido.");
         return contratos[_indice].obterDataAdmissao();
     }
 
     function obterDataRecisao(uint _indice) public view acesso(empregado) returns (uint) {
-        require (_indice < contratos.length);
+        require (_indice < contratos.length, "Índice inválido.");
         return contratos[_indice].obterDataRecisao();
     }
 
