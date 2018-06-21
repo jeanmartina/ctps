@@ -74,11 +74,11 @@ Semelhantemente, o dono da carteira de trabalho pode decidir-se por não aceitar
 
 ## `RF06` - Rescisão de um Contrato
 
-Esta funcionalidade permite que tanto o empregado quanto o empregador rescidam o contrato firmado entre si. O empregado pode rescindir um contrato passando o índice do contrato para o método `rescindirContrato`:
+Esta funcionalidade permite que tanto o empregado quanto o empregador rescidam o contrato firmado entre si. O empregado pode rescindir um contrato passando o índice do contrato para o método `rescindirContrato`. O contrato continua na lista de contratos para fins de cálculo de tempo de serviço, porém sua variável de estado `dataRescisao` é atualizada no momento da transação, quando ocorre a chamada ao método `Contrato.rescindir`:
 ```
     function rescindirContrato(uint _indice) public acesso(empregado) {
         require (_indice < contratos.length, "Índice inválido.");
         contratos[contratos.length - 1].rescindir();
     }
 ```
-O contrato continua na lista de contratos para fins de cálculo de tempo de serviço, porém sua variável de estado `dataRescisao` é atualizada com o tempo em que ocorre a chamada ao método `Contrato.rescindir` no momento da transação.
+O empregador pode rescindir o contrato chamando o método `Contrato.rescindir` a partir de sua interface.
