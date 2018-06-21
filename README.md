@@ -46,8 +46,8 @@ Após adicionar o prefixo `0x`, este número pode ser usado no construtor da CTP
 
 Um empregador pode fazer uma solicitação de firma de contrato com uma pessoa ao chamar o método `solicitarFirmaContrato`. O endereço do contrato de trabalho deve ser passado como parâmetro:
 ```
-    function solicitarFirmaContrato(address _contrato) public {
-        uint8 indice = solicitacoes.push(_contrato) - 1;
+    function solicitarFirmaContrato(Contrato _contrato) public {
+        uint indice = solicitacoes.push(_contrato) - 1;
         emit SolicitacaoContrato(_contrato, indice);
     }
 ```
@@ -59,7 +59,7 @@ A solicitação é armazenada no arranjo dinâmico `solicitacoes`. Um evento com
 Ao receber o evento de solicitação de firma de contrato em sua interface, o dono da CTPS poderá aceitar firmar o contrato através do método `firmarContrato`. O índice da solicitação deverá ser passado como parâmetro. O contrato é adicionado no arranjo de contratos do trabalhador, `contratos`, e removido do arranjo de solicitações:
 ```
     function firmarContrato(uint _indice) public acesso(empregado) {
-        require (_indice < contratos.length, "Índice inválido.");
+        require (_indice < solicitacoes.length, "Índice inválido.");
         contratos.push(solicitacoes[_indice]);
         contratos[contratos.length - 1].firmar();
         removerContrato(solicitacoes, _indice);
