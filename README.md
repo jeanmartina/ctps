@@ -58,16 +58,27 @@ A solicitação é armazenada no arranjo dinâmico `solicitacoes`. Um evento com
 
 Ao receber o evento de solicitação de firma de contrato em sua interface, o dono da CTPS poderá aceitar firmar o contrato através do método `firmarContrato`. O índice da solicitação deverá ser passado como parâmetro. O contrato é adicionado no arranjo de contratos do trabalhador, `contratos`, e removido do arranjo de solicitações:
 ```
-    function firmarContrato(uint8 _indice) public onlyBy(empregado) {
-        contratos.push(solicitacoes[indice]);
-        delete solicitacoes[indice];
+    function firmarContrato(uint _indice) public acesso(empregado) {
+        require (_indice < contratos.length, "Índice inválido.");
+        contratos.push(solicitacoes[_indice]);
+        contratos[contratos.length - 1].firmar();
+        removerContrato(solicitacoes, _indice);
     }
 ```
 Semelhantemente, o dono da carteira de trabalho pode decidir-se por não aceitar a proposta de trabalho, e a solicitação será removida do arranjo de solicitações:
 ```
     function rejeitarSolicitacao(uint8 _indice) public onlyBy(empregado) {
-        delete solicitacoes[indice];
+        removerContrato(solicitacoes, _indice);
     }
 ```
 
+## `RF06` - Rescisão de um Contrato
 
+Esta funcionalidade permite que tanto o empregado quanto o empregador rescidam o contrato firmado entre si. O empregado pode rescindir um contrato passando o índice do contrato para o método `rescindirContrato`:
+```
+    function rescindirContrato(uint _indice) public acesso(empregado) {
+        require (_indice < contratos.length, "Índice inválido.");
+        contratos[contratos.length - 1].rescindir();
+    }
+```
+O contrato continua na lista de contratos para fins de cálculo de tempo de serviço, porém sua variável de estado `dataRescisao` é atualizada com o tempo em que ocorre a chamada ao método `Contrato.rescindir` no momento da transação.
