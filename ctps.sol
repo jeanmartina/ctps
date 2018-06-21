@@ -9,7 +9,7 @@ contract Contrato {
     address public empregado;
     string private info;
     uint private dataAdmissao;
-    uint private dataRecisao;
+    uint private dataRescisao;
 
     modifier acesso(address _quem) {
         require(_quem == msg.sender, "Acesso negado.");
@@ -36,9 +36,14 @@ contract Contrato {
         dataAdmissao = now;
     }
 
-    function obterDataRecisao() public view returns (uint) {
+    function obterDataRescisao() public view returns (uint) {
         require(msg.sender == empregado || msg.sender == empregador, "Acesso negado.");
-        return dataRecisao;
+        return dataRescisao;
+    }
+
+    function rescindir() public {
+        require(msg.sender == empregado || msg.sender == empregador, "Acesso negado.");
+        dataRescisao = now;
     }
 }
 
@@ -91,6 +96,12 @@ contract CTPS {
         removerContrato(solicitacoes, _indice);
     }
 
+    // RF06
+    function rescindirContrato(uint _indice) public acesso(empregado) {
+        require (_indice < contratos.length, "Índice inválido.");
+        contratos[contratos.length - 1].rescindir();
+    }
+
     function removerContrato(Contrato[] storage _vetor, uint _indice) internal {
         for (uint i = _indice; i < _vetor.length - 1; i++) {
             _vetor[i] = _vetor[i+1];
@@ -108,9 +119,9 @@ contract CTPS {
         return contratos[_indice].obterDataAdmissao();
     }
 
-    function obterDataRecisao(uint _indice) public view acesso(empregado) returns (uint) {
+    function obterDataRescisao(uint _indice) public view acesso(empregado) returns (uint) {
         require (_indice < contratos.length, "Índice inválido.");
-        return contratos[_indice].obterDataRecisao();
+        return contratos[_indice].obterDataRescisao();
     }
 
     // ---------
