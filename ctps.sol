@@ -8,8 +8,8 @@ contract Contrato {
     address public empregador;
     address public empregado;
     string private info;
-    uint private dataAdmissao;
-    uint private dataRescisao;
+    uint private dataAdmissao = 0;
+    uint private dataRescisao = 0;
 
     modifier acesso(address _quem) {
         require(_quem == msg.sender, "Acesso negado.");
@@ -33,6 +33,7 @@ contract Contrato {
     }
 
     function firmar() public acesso(empregado) {
+        require(dataAdmissao == 0, "Este contrato já foi firmado.")
         dataAdmissao = now;
     }
 
@@ -43,6 +44,7 @@ contract Contrato {
 
     function rescindir() public {
         require(msg.sender == empregado || msg.sender == empregador, "Acesso negado.");
+        require(dataAdmissao != 0, "Este contrato ainda não foi firmado.")
         dataRescisao = now;
     }
 }
@@ -85,7 +87,7 @@ contract CTPS {
 
     // RF05
     function firmarContrato(uint _indice) public acesso(empregado) {
-        require (_indice < contratos.length, "Índice inválido.");
+        require (_indice < solicitacoes.length, "Índice inválido.");
         contratos.push(solicitacoes[_indice]);
         contratos[contratos.length - 1].firmar();
         removerContrato(solicitacoes, _indice);
