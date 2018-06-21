@@ -83,9 +83,9 @@ Esta funcionalidade permite que tanto o empregado quanto o empregador rescidam o
 ```
 O empregador pode rescindir o contrato chamando o método `Contrato.rescindir` a partir de sua interface.
 
-## `RF07` e `RF09` - Adição de Licenças e Férias
+## `RF07` - Adição de Licenças
 
-A adição de licenças é feita pelo empregador diretamente no contrato de trabalho. Conforme visto na seção __`RF05` - Aceite & Rejeição de Firma de Contrato__, quando um contrato é firmado pelo empregado, emite-se o evento `ContratoFirmado` com o endereço do contrato de trabalho. O empregador, que certamente estará observando esse evento, poderá armazenar esse endereço em sua interface. Posteriormente, esse endereço poderá ser usado para a adição de licenças e períodos de férias que o empregado gozou através dos métodos `adicionarLicenca` e `adicionarFerias`:
+A adição de licenças é feita pelo empregador diretamente no contrato de trabalho. Conforme visto na seção __`RF05` - Aceite & Rejeição de Firma de Contrato__, quando um contrato é firmado pelo empregado, emite-se o evento `ContratoFirmado` com o endereço do contrato de trabalho. O empregador, que certamente estará observando esse evento, poderá armazenar esse endereço em sua interface. Posteriormente, esse endereço poderá ser usado para a adição de licenças através do método `adicionarLicenca`:
 ```
     function adicionarLicenca(uint _tipo, uint _inicio, uint _termino) public {
         require(msg.sender == empregador, "Acesso negado.");
@@ -93,15 +93,8 @@ A adição de licenças é feita pelo empregador diretamente no contrato de trab
         Licenca memory licenca = Licenca(TipoLicenca(_tipo), _inicio, _termino);
         licencas.push(licenca);
     }
-
-    function adicionarFerias(uint _inicio, uint _termino) public {
-        require(msg.sender == empregador, "Acesso negado.");
-        require(_termino > _inicio, "O término das férias deve ocorrer após o seu início.");
-        Ferias memory periodoFerias = Ferias(_inicio, _termino);
-        ferias.push(periodoFerias);
-    }
 ```
-Para isso, definiram-se duas estruturas:
+Definiu-se a estrutura `Licenca` para armazenar os dados:
 ```
     struct Licenca {
         TipoLicenca tipo;
@@ -109,9 +102,45 @@ Para isso, definiram-se duas estruturas:
         uint termino;
     }
 
+```
+onde `TipoLicenca` é o _enum_ `enum TipoLicenca { MATERNIDADE, PATERNIDADE, CASAMENTO, OBITO, MILITAR }`.
+
+
+## `RF08` - Adição de Afastamentos
+
+A adição de afastamentos na CTPS só poderá ser feita pelo órgão regulador, que neste caso é o INSS. Assim como no caso anterior, a inserção é feita diretamente no contrato de trabalho em que houve o afastamento:
+```
+    function adicionarAfastamento(string _motivo, uint _inicio, uint _termino) public {
+        require(msg.sender == inss, "Acesso negado.");
+        require(_termino > _inicio, "A data de término deve ser posterior à data de início.");
+        Afastamento memory periodo = Afastamento(_motivo, _inicio, _termino);
+        afastamentos.push(periodo);
+    }
+```
+Além das datas de início e término do afastamento, considerou-se colocar também o motivo do afastamento que, assim como as informações do contrato (armazenadas em `info`), pode ser um texto cifrado cuja decifragem somente poderá ser feita nas interfaces do empregado, do empregador e do INSS:
+```
+    struct Afastamento {
+        string motivo;
+        uint inicio;
+        uint termino;
+    }
+```
+
+
+## `RF09` - Adição de Férias
+
+
+Da mesma forma que no requisito `RF07`, cabe ao empregador adicionar os períodos de férias que o empregado gozou:
+```
+    function adicionarFerias(uint _inicio, uint _termino) public {
+        require(msg.sender == empregador, "Acesso negado.");
+        require(_termino > _inicio, "O término das férias deve ocorrer após o seu início.");
+        Ferias memory periodoFerias = Ferias(_inicio, _termino);
+        ferias.push(periodoFerias);
+    }
+
     struct Ferias {
         uint inicio;
         uint termino;
     }
 ```
-onde `TipoLicenca` é o _enum_ `enum TipoLicenca { MATERNIDADE, PATERNIDADE, CASAMENTO, OBITO, MILITAR }`.

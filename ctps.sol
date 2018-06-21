@@ -15,23 +15,29 @@ contract Contrato {
         uint inicio;
         uint termino;
     }
+    struct Afastamento {
+        string motivo;
+        uint inicio;
+        uint termino;
+    }
+    
     address public empregador;
     address public empregado;
+    address public inss;
     string private info;
+    
     uint private dataAdmissao = 0;
     uint private dataRescisao = 0;
+    
     Licenca[] private licencas;
     Ferias[] private ferias;
+    Afastamento[] private afastamentos;
 
-    modifier acesso(address _quem) {
-        require(_quem == msg.sender, "Acesso negado.");
-        _;
-    }
-
-    constructor(address _empregado, string _info, address _empregador) public {
+    constructor(address _empregado, string _info, address _empregador, uint8 _dummy, address _inss) public {
         empregado = _empregado;
         empregador = _empregador;
         info = _info;
+        inss = _inss;
     }
 
     function obterInfo() public view returns (string) {
@@ -44,7 +50,8 @@ contract Contrato {
         return dataAdmissao;
     }
 
-    function firmar() public acesso(empregado) {
+    function firmar() public {
+        require(msg.sender == empregado, "Acesso negado.");
         require(dataAdmissao == 0, "Este contrato já foi firmado.");
         dataAdmissao = block.timestamp;
     }
@@ -64,15 +71,23 @@ contract Contrato {
     function adicionarLicenca(uint _tipo, uint _inicio, uint _termino) public {
         require(msg.sender == empregador, "Acesso negado.");
         require(_tipo <= uint(TipoLicenca.MILITAR), "Tipo de licença inexistente.");
-        require(_termino > _inicio, "O término do período de licença deve ocorrer após o seu início.");
+        require(_termino > _inicio, "A data de término deve ser posterior à data de início.");
         Licenca memory licenca = Licenca(TipoLicenca(_tipo), _inicio, _termino);
         licencas.push(licenca);
+    }
+
+    // RF08
+    function adicionarAfastamento(string _motivo, uint _inicio, uint _termino) public {
+        require(msg.sender == inss, "Acesso negado.");
+        require(_termino > _inicio, "A data de término deve ser posterior à data de início.");
+        Afastamento memory periodo = Afastamento(_motivo, _inicio, _termino);
+        afastamentos.push(periodo);
     }
 
     // RF09
     function adicionarFerias(uint _inicio, uint _termino) public {
         require(msg.sender == empregador, "Acesso negado.");
-        require(_termino > _inicio, "O término das férias deve ocorrer após o seu início.");
+        require(_termino > _inicio, "A data de término deve ser posterior à data de início.");
         Ferias memory periodoFerias = Ferias(_inicio, _termino);
         ferias.push(periodoFerias);
     }
@@ -82,7 +97,7 @@ contract Contrato {
 contract CTPS {
 
     address private empregado;
-    address private previdenciaSocial;
+    address private inss;
     address private dadosPessoais;
 
     address[] private solicitacoes;
@@ -102,19 +117,19 @@ contract CTPS {
 
     // RF01 - 0x0c6c57e6e93725646e60bb23308a054e8870aa9c
     constructor(address _empregado, uint8 _dummy, address _dadosPessoais) public {
-        previdenciaSocial = msg.sender;
+        inss = msg.sender;
         empregado = _empregado;
         dadosPessoais = _dadosPessoais;
     }
 
     // RF02 e RF03 - a alteração de dados poderá ser feita somente pela Previdência Social
-    function alterarDadosPessoais(address _dadosPessoais) public acesso(previdenciaSocial) {
+    function alterarDadosPessoais(address _dadosPessoais) public acesso(inss) {
         dadosPessoais = _dadosPessoais;
     }
 
     // RF04
     function solicitarContrato(string _info) public {
-        Contrato c = new Contrato(empregado, _info, msg.sender);
+        Contrato c = new Contrato(empregado, _info, msg.sender, 0, inss);
         uint indice = solicitacoes.push(c) - 1;
         emit SolicitacaoContrato(indice);
     }
@@ -170,7 +185,7 @@ contract CTPS {
     // ---------
     // TESTES
 
-    function obterDadosPessoais() public view acesso(previdenciaSocial) returns (address) {
+    function obterDadosPessoais() public view acesso(inss) returns (address) {
         return dadosPessoais;
     }
 
