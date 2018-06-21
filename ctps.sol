@@ -11,12 +11,17 @@ contract Contrato {
         uint inicio;
         uint termino;
     }
+    struct Ferias {
+        uint inicio;
+        uint termino;
+    }
     address public empregador;
     address public empregado;
     string private info;
     uint private dataAdmissao = 0;
     uint private dataRescisao = 0;
     Licenca[] private licencas;
+    Ferias[] private ferias;
 
     modifier acesso(address _quem) {
         require(_quem == msg.sender, "Acesso negado.");
@@ -59,8 +64,17 @@ contract Contrato {
     function adicionarLicenca(uint _tipo, uint _inicio, uint _termino) public {
         require(msg.sender == empregador, "Acesso negado.");
         require(_tipo <= uint(TipoLicenca.MILITAR), "Tipo de licença inexistente.");
+        require(_termino > _inicio, "O término do período de licença deve ocorrer após o seu início.");
         Licenca memory licenca = Licenca(TipoLicenca(_tipo), _inicio, _termino);
         licencas.push(licenca);
+    }
+
+    // RF09
+    function adicionarFerias(uint _inicio, uint _termino) public {
+        require(msg.sender == empregador, "Acesso negado.");
+        require(_termino > _inicio, "O término das férias deve ocorrer após o seu início.");
+        Ferias memory periodoFerias = Ferias(_inicio, _termino);
+        ferias.push(periodoFerias);
     }
 }
 
