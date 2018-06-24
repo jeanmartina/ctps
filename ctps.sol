@@ -23,7 +23,7 @@ contract Contrato {
     }
     
     address public empregador;
-    address public empregado;
+    address public ctps;
     address public inss;
     string private info;
     
@@ -34,36 +34,36 @@ contract Contrato {
     Ferias[] private ferias;
     Afastamento[] private afastamentos;
 
-    constructor(address _empregado, string _info, address _empregador, uint8 _dummy, address _inss) public {
-        empregado = _empregado;
+    constructor(address _ctps, string _info, address _empregador, uint8 _dummy, address _inss) public {
+        ctps = _ctps;
         empregador = _empregador;
         info = _info;
         inss = _inss;
     }
 
     function obterInfo() public view returns (string) {
-        require(msg.sender == empregado || msg.sender == empregador, "Acesso negado.");
+        require(msg.sender == ctps || msg.sender == empregador, "Acesso negado.");
         return info;
     }
     
     function obterDataAdmissao() public view returns (uint) {
-        require(msg.sender == empregado || msg.sender == empregador, "Acesso negado.");
+        require(msg.sender == ctps || msg.sender == empregador, "Acesso negado.");
         return dataAdmissao;
     }
 
     function firmar() public {
-        require(msg.sender == empregado, "Acesso negado.");
+        require(msg.sender == ctps, "Acesso negado.");
         require(dataAdmissao == 0, "Este contrato já foi firmado.");
         dataAdmissao = block.timestamp;
     }
 
     function obterDataRescisao() public view returns (uint) {
-        require(msg.sender == empregado || msg.sender == empregador, "Acesso negado.");
+        require(msg.sender == ctps || msg.sender == empregador, "Acesso negado.");
         return dataRescisao;
     }
 
     function rescindir() public {
-        require(msg.sender == empregado || msg.sender == empregador, "Acesso negado.");
+        require(msg.sender == ctps || msg.sender == empregador, "Acesso negado.");
         require(dataAdmissao != 0, "Este contrato ainda não foi firmado.");
         dataRescisao = block.timestamp;
     }
@@ -95,7 +95,7 @@ contract Contrato {
 
     // RF10
     function tempoAposentadoria() public view returns (uint) {
-        require(msg.sender == empregado || msg.sender == empregador || msg.sender == inss, "Acesso negado.");
+        require(msg.sender == ctps || msg.sender == empregador || msg.sender == inss, "Acesso negado.");
         require(dataAdmissao != 0, "Este contrato ainda não foi firmado.");
 
         uint i;
@@ -162,7 +162,7 @@ contract CTPS {
 
     // RF04
     function solicitarContrato(string _info) public {
-        Contrato c = new Contrato(empregado, _info, msg.sender, 0, inss);
+        Contrato c = new Contrato(this, _info, msg.sender, 0, inss);
         uint indice = solicitacoes.push(c) - 1;
         emit SolicitacaoContrato(indice);
     }
@@ -240,10 +240,16 @@ contract CTPS {
     }
 
     function obterSolicitacao(uint _indice) public view acesso(empregado) returns (address) {
+        require (_indice < solicitacoes.length, "Índice inválido.");
         return solicitacoes[_indice];
     }
     
     function obterContratos() public view acesso(empregado) returns (uint) {
         return contratos.length;
+    }
+
+    function obterContrato(uint _indice) public view acesso(empregado) returns (address) {
+        require (_indice < contratos.length, "Índice inválido.");
+        return contratos[_indice];
     }
 }
